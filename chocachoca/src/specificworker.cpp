@@ -68,6 +68,12 @@ void SpecificWorker::initialize(int period)
 	}
 	else
 	{
+        // Inicializaciones personales
+        viewer = new AbstractGraphicViewer(this, QRectF(-5000,-5000,10000,10000));
+        viewer->add_robot(460,480,0,100,QColor("Blue"));
+        viewer->show();
+
+
 		timer.start(Period);
 	}
 
@@ -76,16 +82,18 @@ void SpecificWorker::initialize(int period)
 void SpecificWorker::compute() {
 
     try {
-        auto ldata = lidar3d_proxy->getLidarData("pear", 0, 360, 1);
+        auto ldata = lidar3d_proxy->getLidarData("helios", 0, 360, 1);
         qInfo()<< ldata.points.size();
         const auto &points = ldata.points;
         if(points.empty()) return;
+
+        draw_lidar(ldata.points, viewer);
 
         int offset = points.size()/2-points.size()/5;
         auto min_elem = std::min(points.begin()+offset, points.end()-offset, [](auto  a, auto b)
         { return (a->x*a->x+a->y*a->y+a->z*a->z) > (b->x*b->x+b->y*b->y+b->z*b->z); });
 
-                qInfo() << min_elem->x << min_elem->y << min_elem->z;
+                //qInfo() << min_elem->x << min_elem->y << min_elem->z;
 
     }
     catch (const Ice::Exception &e) {
@@ -97,6 +105,24 @@ void SpecificWorker::compute() {
         QTimer::singleShot(200, qApp, SLOT(quit()));
         return 0;
     }
+
+void SpecificWorker::draw_lidar(const RoboCompLidar3D::TPoints &points, AbstractGraphicViewer *viewer)
+{
+    static std::vector<QGraphicsItem*> borrar;
+    for(auto &b : borrar) {
+        viewer->scene.removeItem(b);
+        delete p;
+    }
+    borrar.clear();
+
+    for(const auto &p : points)
+    {
+        auto point = viewer->scene.addRect(-50,-50,100, 100, QPen(QColor("Blue")), QBrush(QColor("Blue")));
+        point->setPos(p.x*1000, p.y*1000);
+        borrar.push_back(point);
+
+    }
+}
 
 
 
