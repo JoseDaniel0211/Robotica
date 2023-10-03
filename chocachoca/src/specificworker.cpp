@@ -111,7 +111,7 @@ void SpecificWorker::draw_lidar(const RoboCompLidar3D::TPoints &points, Abstract
     static std::vector<QGraphicsItem*> borrar;
     for(auto &b : borrar) {
         viewer->scene.removeItem(b);
-        delete p;
+        delete b;
     }
     borrar.clear();
 
