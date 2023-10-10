@@ -92,14 +92,48 @@ void SpecificWorker::compute() {
         std::ranges::copy_if(ldata.points, std::back_inserter(filtered_points), [](auto &p) { return p.z < 2000;});
         draw_lidar(filtered_points, viewer);
 
-        ///controll
+        switch(estado)
+        {
+            case Estado::IDLE:
+                break;
+            case Estado::FOLLOW_WALL:
+                break;
+            case Estado::STRAIGHT_LINE:
+                estado = chocachoca();
+                break;
+            case Estado::SPIRAL:
+                break;
+        }
 
+        ///control
 
-        int offset = points.size()/2-points.size()/5;
-        auto min_elem = std::min(points.begin()+offset, points.end()-offset, [](auto  a, auto b)
-        { return std::hypot(a->x, a->y, a->z) > std::hypot(b->x, b->y, b->z); });
+        int offset = filtered_points.size()/2-filtered_points.size()/3;
+        auto min_elem = std::min_element(filtered_points.begin()+offset, filtered_points.end()-offset, [](auto  a, auto b)
+        { return std::hypot(a.x, a.y) < std::hypot(b.x, b.y); });
 
-                qInfo() << min_elem->x << min_elem->y << min_elem->z;
+        const float MIN_DISTANCE = 1000;
+        qInfo() << std::hypot(min_elem->x, min_elem->y);
+        if(std::hypot(min_elem->x, min_elem->y) < MIN_DISTANCE)
+        {
+            try
+            {
+                omnirobot_proxy->setSpeedBase(0,0,0.5);
+            }
+            catch(const Ice::Exception &e) {
+                std::cout << "Error reading from Camera" << e << std::endl;
+            }
+        }
+        else{
+            try
+            {
+                omnirobot_proxy->setSpeedBase(1000/1000.f, 0,0);
+            }
+            catch (const Ice::Exception &e)
+            {
+                std::cout << "Error reading from camera" << e << std::endl;
+            }
+        }
+                //qInfo() << min_elem->x << min_elem->y << min_elem->z;
 
     }
     catch (const Ice::Exception &e) {
@@ -127,6 +161,10 @@ void SpecificWorker::draw_lidar(const RoboCompLidar3D::TPoints &points, Abstract
         point->setPos(p.x, p.y);
         borrar.push_back(point);
     }
+}
+
+SpecificWorker::Estado SpecificWorker::chocachoca() {
+    return SpecificWorker::Estado::STRAIGHT_LINE;
 }
 
 

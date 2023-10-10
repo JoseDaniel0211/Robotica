@@ -50,6 +50,12 @@ private:
     AbstractGraphicViewer *viewer;
 
     void draw_lidar(const RoboCompLidar3D::TPoints &points, AbstractGraphicViewer *viewer);
+
+    enum class Estado { IDLE, FOLLOW_WALL, STRAIGHT_LINE, SPIRAL};
+    //Estados
+    Estado estado = Estado::IDLE;
+    Estado chocachoca();
+
 };
 
 #endif
