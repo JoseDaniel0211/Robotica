@@ -79,11 +79,6 @@
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="chocachoca" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="chocachoca" TARGET_NAME="chocachoca" CONFIG_NAME="Default" RUN_TARGET_PROJECT_NAME="chocachoca" RUN_TARGET_NAME="chocachoca">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -107,6 +102,7 @@
       <workItem from="1696344208848" duration="632000" />
       <workItem from="1696426736546" duration="600000" />
       <workItem from="1696945129860" duration="5297000" />
+      <workItem from="1697033353307" duration="4849000" />
     </task>
     <servers />
   </component>

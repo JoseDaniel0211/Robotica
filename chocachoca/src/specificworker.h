@@ -54,8 +54,9 @@ private:
     enum class Estado { IDLE, FOLLOW_WALL, STRAIGHT_LINE, SPIRAL};
     //Estados
     Estado estado = Estado::IDLE;
-    Estado chocachoca();
-
+    struct RobotSpeed{float adv; float side; float rot;};
+    std::tuple<Estado, RobotSpeed> chocachoca();
+    std::tuple<Estado, RobotSpeed> stop();
 };
 
 #endif
