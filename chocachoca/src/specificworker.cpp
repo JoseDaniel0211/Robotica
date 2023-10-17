@@ -23,10 +23,10 @@
 */
 SpecificWorker::SpecificWorker(TuplePrx tprx, bool startup_check) : GenericWorker(tprx)
 {
-	this->startup_check_flag = startup_check;
-	// Uncomment if there's too many debug messages
-	// but it removes the possibility to see the messages
-	// shown in the console with qDebug()
+    this->startup_check_flag = startup_check;
+    // Uncomment if there's too many debug messages
+    // but it removes the possibility to see the messages
+    // shown in the console with qDebug()
 //	QLoggingCategory::setFilterRules("*.debug=false\n");
 }
 
@@ -35,7 +35,7 @@ SpecificWorker::SpecificWorker(TuplePrx tprx, bool startup_check) : GenericWorke
 */
 SpecificWorker::~SpecificWorker()
 {
-	std::cout << "Destroying SpecificWorker" << std::endl;
+    std::cout << "Destroying SpecificWorker" << std::endl;
 }
 
 bool SpecificWorker::setParams(RoboCompCommonBehavior::ParameterList params)
@@ -55,27 +55,27 @@ bool SpecificWorker::setParams(RoboCompCommonBehavior::ParameterList params)
 
 
 
-	return true;
+    return true;
 }
 
 void SpecificWorker::initialize(int period)
 {
-	std::cout << "Initialize worker" << std::endl;
-	this->Period = period;
-	if(this->startup_check_flag)
-	{
-		this->startup_check();
-	}
-	else
-	{
+    std::cout << "Initialize worker" << std::endl;
+    this->Period = period;
+    if(this->startup_check_flag)
+    {
+        this->startup_check();
+    }
+    else
+    {
         // Inicializaciones personales
         viewer = new AbstractGraphicViewer(this, QRectF(-5000,-5000,10000,10000));
         viewer->add_robot(460,480,0,100,QColor("Blue"));
         viewer->show();
         viewer->activateWindow();
 
-		timer.start(Period);
-	}
+        timer.start(Period);
+    }
 
 }
 
@@ -88,52 +88,52 @@ void SpecificWorker::compute() {
         qInfo() << ldata.points.size();
         const auto &points = ldata.points;
         if (points.empty()) return;
+
+
+    //decltype(ldata.points) filtered_points;
+    RoboCompLidar3D::TPoints filtered_points;
+    std::ranges::copy_if(ldata.points, std::back_inserter(filtered_points), [](auto &p) { return p.z < 2000;});
+    draw_lidar(filtered_points, viewer);
+    std::tuple<Estado, RobotSpeed> res;
+    switch(estado)
+    {
+        case Estado::IDLE:
+            break;
+        case Estado::FOLLOW_WALL:
+            break;
+        case Estado::STRAIGHT_LINE: {
+            chocachoca(const_cast<RoboCompLidar3D::TPoints &>(points));
+
+            break;
+        }
+        case Estado::SPIRAL:
+            break;
+    }
     }
     catch (const Ice::Exception &e)
     {
         std::cout << "Error reading from Camera" << e << std::endl;
     }
-
-        //decltype(ldata.points) filtered_points;
-        RoboCompLidar3D::TPoints filtered_points;
-        std::ranges::copy_if(ldata.points, std::back_inserter(filtered_points), [](auto &p) { return p.z < 2000;});
-        draw_lidar(filtered_points, viewer);
-        std::tuple<Estado, RobotSpeed> res;
-        switch(estado)
-        {
-            case Estado::IDLE:
-                break;
-            case Estado::FOLLOW_WALL:
-                break;
-            case Estado::STRAIGHT_LINE: {
-                res = chocachoca();
-
-                break;
-            }
-            case Estado::SPIRAL:
-                break;
-        }
-
-        estado = std::get<0>(res);
-        auto &[estado_, robotspeed_] = res;
-        estado = estado_;
-
-            try
-            {
-                omnirobot_proxy->setSpeedBase(0,0,0.5);
-            }
-            catch(const Ice::Exception &e) {
-                std::cout << "Error reading from Camera" << e << std::endl;
-            }
-        }
-
-
-}
-    int SpecificWorker::startup_check() {
-        std::cout << "Startup check" << std::endl;
-        QTimer::singleShot(200, qApp, SLOT(quit()));
-        return 0;
+    /*
+    estado = std::get<0>(res);
+    auto &[estado_, robotspeed_] = res;
+    estado = estado_;
+    */
+    try
+    {
+        //omnirobot_proxy->setSpeedBase(0,0,0.5);
     }
+    catch(const Ice::Exception &e) {
+        std::cout << "Error reading from Camera" << e << std::endl;
+    }
+}
+
+
+int SpecificWorker::startup_check() {
+    std::cout << "Startup check" << std::endl;
+    QTimer::singleShot(200, qApp, SLOT(quit()));
+    return 0;
+}
 
 void SpecificWorker::draw_lidar(const RoboCompLidar3D::TPoints &points, AbstractGraphicViewer *viewer)
 {
@@ -152,29 +152,32 @@ void SpecificWorker::draw_lidar(const RoboCompLidar3D::TPoints &points, Abstract
     }
 }
 
-std::tuple<SpecificWorker::Estado, SpecificWorker::RobotSpeed> SpecificWorker::chocachoca() {
-    RoboCompLidar3D::TPoints filtered_points;
-    int offset = filtered_points.size()/2-filtered_points.size()/3;
-    auto min_elem = std::min_element(filtered_points.begin()+offset, filtered_points.end()-offset, [](auto  a, auto b)
+void SpecificWorker::chocachoca(RoboCompLidar3D::TPoints &points) {
+    int offset = points.size()/2-points.size()/3;
+    auto min_elem = std::min_element(points.begin()+offset, points.end()-offset, [](auto  a, auto b)
     { return std::hypot(a.x, a.y) < std::hypot(b.x, b.y); });
 
     RobotSpeed robot_speed;
-    Estado estado;
     const float MIN_DISTANCE = 1000;
     qInfo() << std::hypot(min_elem->x, min_elem->y);
+    qInfo() << "hola";
     if(std::hypot(min_elem->x, min_elem->y) < MIN_DISTANCE)
     {
-        robot_speed = RobotSpeed{ .adv=0, .side=0, .rot=0.5};
+        qInfo() << "holaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+        //robot_speed = RobotSpeed{ .adv=0, .side=0, .rot=0.5};
+        omnirobot_proxy->setSpeedBase(0, 0, 0.5);
     }else{
-        robot_speed = RobotSpeed{ .adv=1, .side=0, .rot=0};
+        qInfo() << "heyyyy";
+        RobotSpeed robot_speed{ .adv = 1000/1000.f, .side = 0, .rot = 0 };
+        qInfo() << "Velocidad: adv=" << robot_speed.adv << ", side=" << robot_speed.side << ", rot=" << robot_speed.rot;
+        omnirobot_proxy->setSpeedBase(robot_speed.adv, robot_speed.side, robot_speed.rot);
     }
-    return std::make_tuple(Estado::STRAIGHT_LINE, robot_speed);
 }
-
+/*
 std::tuple<SpecificWorker::Estado, SpecificWorker::RobotSpeed> stop(){
 
 }
-
+*/
 
 
 
