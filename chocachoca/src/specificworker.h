@@ -45,7 +45,8 @@ public slots:
     void compute();
     int startup_check();
     void initialize(int period);
-    void chocachoca(RoboCompLidar3D::TPoints &points);
+
+
 
 private:
     bool startup_check_flag;
@@ -57,8 +58,10 @@ private:
     //Estados
     Estado estado = Estado::STRAIGHT_LINE;
     struct RobotSpeed{float adv; float side; float rot;};
-
+    std::tuple<Estado, RobotSpeed> chocachoca(RoboCompLidar3D::TPoints &points);
     std::tuple<Estado, RobotSpeed> stop();
+    std::tuple<Estado, RobotSpeed> follow_wall(RoboCompLidar3D::TPoints &points);
+    std::tuple<Estado, RobotSpeed> spiral();
 };
 
 #endif

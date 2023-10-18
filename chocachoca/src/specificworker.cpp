@@ -98,6 +98,7 @@ void SpecificWorker::compute() {
     switch(estado)
     {
         case Estado::IDLE:
+            stop();
             break;
         case Estado::FOLLOW_WALL:
             break;
@@ -152,7 +153,7 @@ void SpecificWorker::draw_lidar(const RoboCompLidar3D::TPoints &points, Abstract
     }
 }
 
-void SpecificWorker::chocachoca(RoboCompLidar3D::TPoints &points) {
+std::tuple<SpecificWorker::Estado , SpecificWorker::RobotSpeed> SpecificWorker::chocachoca(RoboCompLidar3D::TPoints &points) {
     int offset = points.size()/2-points.size()/3;
     auto min_elem = std::min_element(points.begin()+offset, points.end()-offset, [](auto  a, auto b)
     { return std::hypot(a.x, a.y) < std::hypot(b.x, b.y); });
@@ -160,24 +161,75 @@ void SpecificWorker::chocachoca(RoboCompLidar3D::TPoints &points) {
     RobotSpeed robot_speed;
     const float MIN_DISTANCE = 1000;
     qInfo() << std::hypot(min_elem->x, min_elem->y);
-    qInfo() << "hola";
     if(std::hypot(min_elem->x, min_elem->y) < MIN_DISTANCE)
     {
-        qInfo() << "holaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-        //robot_speed = RobotSpeed{ .adv=0, .side=0, .rot=0.5};
+        robot_speed = RobotSpeed{ .adv=0, .side=0, .rot=0.5};
         omnirobot_proxy->setSpeedBase(0, 0, 0.5);
     }else{
-        qInfo() << "heyyyy";
+
         RobotSpeed robot_speed{ .adv = 1000/1000.f, .side = 0, .rot = 0 };
         qInfo() << "Velocidad: adv=" << robot_speed.adv << ", side=" << robot_speed.side << ", rot=" << robot_speed.rot;
         omnirobot_proxy->setSpeedBase(robot_speed.adv, robot_speed.side, robot_speed.rot);
+        robot_speed = RobotSpeed{ .adv=1000/1000.f, .side=0, .rot=0};
     }
+    return std::make_tuple(Estado::STRAIGHT_LINE, robot_speed);
 }
-/*
-std::tuple<SpecificWorker::Estado, SpecificWorker::RobotSpeed> stop(){
+std::tuple<SpecificWorker::Estado , SpecificWorker::RobotSpeed> SpecificWorker::follow_wall(RoboCompLidar3D::TPoints &points) {
+    int offset = points.size() / 2 - points.size() / 3;
+    auto min_elem = std::min_element(points.begin() + offset, points.end() - offset, [](auto a, auto b)
+    { return std::hypot(a.x, a.y) < std::hypot(b.x, b.y); });
 
+    const float MIN_DISTANCE = 200;
+    qInfo() << std::hypot(min_elem->x, min_elem->y);
+    RobotSpeed robot_speed;
+
+    if (std::hypot(min_elem->x, min_elem->y) > MIN_DISTANCE) {
+        // Si el robot está demasiado cerca de la pared, gira a la izquierda.
+        omnirobot_proxy->setSpeedBase(1000/1000.f, 0, 0);
+    } else {
+        if(min_elem->x == MIN_DISTANCE){
+            omnirobot_proxy->setSpeedBase(1000/1000.f, 0, 0);
+        }else if(min_elem->x > MIN_DISTANCE){
+            omnirobot_proxy->setSpeedBase(0, 0, 0.25);
+        }
+        // Establece la velocidad del robot para seguir la pared.
+        RobotSpeed robot_speed{ .adv = 1000 / 1000.f, .side = 0, .rot = 0 };
+        omnirobot_proxy->setSpeedBase(robot_speed.adv, robot_speed.side, robot_speed.rot);
+        robot_speed = RobotSpeed{ .adv=1000/1000.f, .side=0, .rot=0};
+    }
+    return std::make_tuple(Estado::FOLLOW_WALL, robot_speed);
 }
-*/
+
+std::tuple<SpecificWorker::Estado , SpecificWorker::RobotSpeed> SpecificWorker::spiral() {
+    const float SPIRAL_INCREMENT = 0.1;  // Valor de incremento del radio de la espiral
+    float spiralRadius = 0.0;  // Radio inicial de la espiral
+    float rotationSpeed = 0.5;  // Velocidad de rotación constante
+
+    RobotSpeed robot_speed;
+    while (true) {
+        // Calcula la posición en la espiral (coordenadas polares).
+        float x = spiralRadius * std::cos(spiralRadius);
+        float y = spiralRadius * std::sin(spiralRadius);
+
+        // Establece la velocidad del robot para moverse en la espiral.
+        robot_speed = RobotSpeed{ .adv = 1000 / 1000.f, .side = 0, .rot = rotationSpeed };
+
+        // Actualiza el radio de la espiral para avanzar en la espiral.
+        spiralRadius += SPIRAL_INCREMENT;
+
+        // Aplica una pausa para controlar la velocidad de la espiral.
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+    return std::make_tuple(Estado::SPIRAL, robot_speed);
+}
+
+std::tuple<SpecificWorker::Estado , SpecificWorker::RobotSpeed> SpecificWorker::stop() {
+    omnirobot_proxy->setSpeedBase(0, 0, 0);
+    RobotSpeed robot_speed;
+    robot_speed = RobotSpeed{ .adv=0, .side=0, .rot=0};
+    return std::make_tuple(Estado::IDLE, robot_speed);
+}
+
 
 
 

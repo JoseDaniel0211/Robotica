@@ -3,9 +3,9 @@
   <component name="AutoImportSettings">
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
-  <component name="CMakePresetLoader">{
-  &quot;useNewFormat&quot;: true
-}</component>
+  <component name="CMakePresetLoader"><![CDATA[{
+  "useNewFormat": true
+}]]></component>
   <component name="CMakeReloadState">
     <option name="reloaded" value="true" />
   </component>
@@ -17,14 +17,11 @@
   </component>
   <component name="CMakeSettings">
     <configurations>
-      <configuration PROFILE_NAME="Default" ENABLED="true" GENERATION_DIR="$PROJECT_DIR$" GENERATION_OPTIONS="-G &quot;Unix Makefiles&quot;" BUILD_OPTIONS="-j12" />
+      <configuration PROFILE_NAME="Default" ENABLED="true" GENERATION_DIR="." GENERATION_OPTIONS="-G &quot;Unix Makefiles&quot;" BUILD_OPTIONS="-j12" />
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="52057841-ae7b-45a7-b0b0-303f69b10151" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/chocachoca.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
+    <list default="true" id="1f0d5a46-1ce5-408e-ae68-3529be007616" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/specificworker.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/specificworker.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/specificworker.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/specificworker.h" afterDir="false" />
@@ -49,11 +46,11 @@
     <option name="majorVersion" value="2023" />
     <option name="minorVersion" value="2.2" />
   </component>
-  <component name="ProjectColorInfo">{
-  &quot;customColor&quot;: &quot;&quot;,
-  &quot;associatedIndex&quot;: 7
-}</component>
-  <component name="ProjectId" id="2WFulUgiSIOrk6a0Fs7O0rJEb1W" />
+  <component name="ProjectColorInfo"><![CDATA[{
+  "customColor": "",
+  "associatedIndex": 7
+}]]></component>
+  <component name="ProjectId" id="2WwIDAzNyC7J4LJPQI6Ky7zjZ8Y" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -67,7 +64,6 @@
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
     "git-widget-placeholder": "main",
-    "last_opened_file_path": "/home/robocomp/robocomp/components/grupo-4-robotica/chocachoca",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -77,6 +73,11 @@
   }
 }]]></component>
   <component name="RunManager" selected="CMake Application.chocachoca">
+    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="ICES__home_robocomp_robocomp_components_Robotica_Grupo7_chocachoca_src" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="chocachoca" TARGET_NAME="ICES__home_robocomp_robocomp_components_Robotica_Grupo7_chocachoca_src" CONFIG_NAME="Default">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -88,26 +89,19 @@
       </method>
     </configuration>
     <list>
-      <item itemvalue="CMake Application.ICES__home_robocomp_robocomp_components_Robotica_Grupo7_chocachoca_src" />
       <item itemvalue="CMake Application.chocachoca" />
+      <item itemvalue="CMake Application.ICES__home_robocomp_robocomp_components_Robotica_Grupo7_chocachoca_src" />
     </list>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="52057841-ae7b-45a7-b0b0-303f69b10151" name="Changes" comment="" />
-      <created>1696340800263</created>
+      <changelist id="1f0d5a46-1ce5-408e-ae68-3529be007616" name="Changes" comment="" />
+      <created>1697637094706</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1696340800263</updated>
-      <workItem from="1696340801326" duration="1233000" />
-      <workItem from="1696343773260" duration="118000" />
-      <workItem from="1696344208848" duration="632000" />
-      <workItem from="1696426736546" duration="600000" />
-      <workItem from="1696945129860" duration="5297000" />
-      <workItem from="1697033353307" duration="4849000" />
-      <workItem from="1697549630410" duration="7000" />
-      <workItem from="1697549631246" duration="6880000" />
+      <updated>1697637094706</updated>
+      <workItem from="1697637096051" duration="5820000" />
     </task>
     <servers />
   </component>
