@@ -56,7 +56,7 @@ private:
 
     enum class Estado { IDLE, FOLLOW_WALL, STRAIGHT_LINE, SPIRAL};
     //Estados
-    Estado estado = Estado::STRAIGHT_LINE;
+    Estado estado = Estado::FOLLOW_WALL;
     struct RobotSpeed{float adv; float side; float rot;};
     std::tuple<Estado, RobotSpeed> chocachoca(RoboCompLidar3D::TPoints &points);
     std::tuple<Estado, RobotSpeed> stop();
