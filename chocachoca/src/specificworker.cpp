@@ -109,6 +109,7 @@ void SpecificWorker::compute() {
             break;
         }
         case Estado::SPIRAL:
+            //spiral(const_cast<RoboCompLidar3D::TPoints &>(points), RobotSpeed velocidadGuardada);
             break;
     }
     }
@@ -164,8 +165,8 @@ std::tuple<SpecificWorker::Estado , SpecificWorker::RobotSpeed> SpecificWorker::
     qInfo() << std::hypot(min_elem->x, min_elem->y);
     if(std::hypot(min_elem->x, min_elem->y) < MIN_DISTANCE)
     {
-        robot_speed = RobotSpeed{ .adv=0, .side=0, .rot=0.5};
-        omnirobot_proxy->setSpeedBase(0, 0, 0.5);
+        robot_speed = RobotSpeed{ .adv=0, .side=0, .rot=1};
+        omnirobot_proxy->setSpeedBase(0, 0, 1);
     }else{
 
         RobotSpeed robot_speed{ .adv = 1000/1000.f, .side = 0, .rot = 0 };
@@ -175,92 +176,76 @@ std::tuple<SpecificWorker::Estado , SpecificWorker::RobotSpeed> SpecificWorker::
     }
     return std::make_tuple(Estado::STRAIGHT_LINE, robot_speed);
 }
-/*
-std::tuple<SpecificWorker::Estado, SpecificWorker::RobotSpeed> SpecificWorker::follow_wall(RoboCompLidar3D::TPoints &points) {
-    // Parámetros de control
-    const float DISTANCIA_OBJETIVO = 500; // Distancia objetivo a la pared en milímetros
-    const float VELOCIDAD_AVANCE = 0.5;   // Velocidad de avance constante
-    const float GANANCIA_P = 0.05;         // Ganancia proporcional para el control
 
-    int offset = points.size() / 2 - points.size() / 3;
-    auto min_elem = std::min_element(points.begin() + offset, points.end() - offset, [](auto a, auto b) {
-        return std::hypot(a.x, a.y) < std::hypot(b.x, b.y);
-    });
-    RobotSpeed robot_speed;
-    if ( min_elem->y < DISTANCIA_OBJETIVO) {
-        float distancia_actual = std::hypot(min_elem->x, min_elem->y);
-        qInfo() << "Distancia a la pared: " << distancia_actual;
-
-        // Control proporcional para mantener la distancia a la pared
-        float error = DISTANCIA_OBJETIVO - distancia_actual;
-        float velocidad_rotacion = GANANCIA_P * error;
-
-        // Establecer la velocidad del robot
-
-        omnirobot_proxy->setSpeedBase(0, 0, velocidad_rotacion);
-    }
-    else{
-
-        omnirobot_proxy->setSpeedBase(1000/1000.f, 0, 0);
-    }
-    return std::make_tuple(Estado::FOLLOW_WALL, robot_speed);
-}
-*/
 std::tuple<SpecificWorker::Estado , SpecificWorker::RobotSpeed> SpecificWorker::follow_wall(RoboCompLidar3D::TPoints &points) {
     int offset = points.size() / 2 - points.size() / 3;
     auto min_elem = std::min_element(points.begin() + offset, points.end() - offset, [](auto a, auto b)
     { return std::hypot(a.x, a.y) < std::hypot(b.x, b.y); });
 
-    const float MIN_DISTANCE = 495;
+    const float MIN_DISTANCE= 550;
+
+    const float MIN_DISTANCE_X = 325;
     //const float MIN_DISTANCE_X =
     qInfo() <<"x: "<< abs(min_elem->x)<<"y: "<< abs(min_elem->y);
     RobotSpeed robot_speed;
 
-    if ( abs(min_elem->y) < MIN_DISTANCE) {
-        qInfo() << "aaaaaaa";
+    if ( std::hypot(min_elem->x, min_elem->y) < MIN_DISTANCE) {
+        RobotSpeed robot_speed{ .adv=0, .side=0, .rot=1};
         omnirobot_proxy->setSpeedBase(0, 0, 1);
-        if(abs(min_elem->x) > MIN_DISTANCE){
-            qInfo() << "bbbbb";
+        if(abs(min_elem->x) > MIN_DISTANCE_X){
+            robot_speed= { .adv=1000/1000.f, .side=0, .rot=0};
             omnirobot_proxy->setSpeedBase(1000/1000.f, 0, 0);
         }
 
-
     } else {
-        qInfo() << "hola";
-        omnirobot_proxy->setSpeedBase(1000/1000.f, 0, 0);
+        if(abs(min_elem->x) > MIN_DISTANCE_X+40) {
+            RobotSpeed robot_speed{ .adv=0, .side=-M_PI/2, .rot=-1};
+            omnirobot_proxy->setSpeedBase(0, -M_PI/2, -1);
+        }else {
 
-        // Establece la velocidad del robot para seguir la pared.
-        RobotSpeed robot_speed{ .adv = 1000 / 1000.f, .side = 0, .rot = 0 };
-        omnirobot_proxy->setSpeedBase(robot_speed.adv, robot_speed.side, robot_speed.rot);
-        robot_speed = RobotSpeed{ .adv=1000/1000.f, .side=0, .rot=0};
+            //omnirobot_proxy->setSpeedBase(1000 / 1000.f, 0, 0);
+
+            // Establece la velocidad del robot para seguir la pared.
+            RobotSpeed robot_speed{.adv = 1000 / 1000.f, .side = 0, .rot = 0};
+            omnirobot_proxy->setSpeedBase(robot_speed.adv, robot_speed.side, robot_speed.rot);
+            robot_speed = RobotSpeed{.adv=1000 / 1000.f, .side=0, .rot=0};
+        }
     }
     return std::make_tuple(Estado::FOLLOW_WALL, robot_speed);
 }
 
-/*
-std::tuple<SpecificWorker::Estado , SpecificWorker::RobotSpeed> SpecificWorker::spiral() {
-    const float SPIRAL_INCREMENT = 0.1;  // Valor de incremento del radio de la espiral
-    float spiralRadius = 0.0;  // Radio inicial de la espiral
-    float rotationSpeed = 0.5;  // Velocidad de rotación constante
 
-    RobotSpeed robot_speed;
-    while (true) {
-        // Calcula la posición en la espiral (coordenadas polares).
-        float x = spiralRadius * std::cos(spiralRadius);
-        float y = spiralRadius * std::sin(spiralRadius);
+std::tuple<SpecificWorker::Estado , SpecificWorker::RobotSpeed> SpecificWorker::spiral(RoboCompLidar3D::TPoints &points, RobotSpeed velocidadGuardada) {
+    // Calcula la distancia al centro.
+    int offset = points.size() / 2 - points.size() / 3;
+    auto min_elem = std::min_element(points.begin() + offset, points.end() - offset, [](auto a, auto b)
+    { return std::hypot(a.x, a.y) < std::hypot(b.x, b.y); });
 
-        // Establece la velocidad del robot para moverse en la espiral.
-        robot_speed = RobotSpeed{ .adv = 1000 / 1000.f, .side = 0, .rot = rotationSpeed };
+    float distance_to_center = std::hypot(min_elem->x, min_elem->y);
 
-        // Actualiza el radio de la espiral para avanzar en la espiral.
-        spiralRadius += SPIRAL_INCREMENT;
+    // Define una velocidad lineal constante hacia adelante.
+    float linear_speed = 0.6;
 
-        // Aplica una pausa para controlar la velocidad de la espiral.
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    // Define una velocidad angular que aumenta gradualmente a medida que el robot se aleja del centro.
+    float angular_speed = 0.5;
+
+    // Ajusta la velocidad angular para que gire en la dirección correcta.
+    if (min_elem->x < 0) {
+        angular_speed = -angular_speed;
     }
+
+    // Incrementa el valor de las variables con cada iteración.
+    static float delta = 0.05;  // Puedes ajustar el valor de delta según sea necesario.
+
+    linear_speed += delta;
+    angular_speed += delta;
+
+    // Establece la velocidad del robot para moverse en espiral hacia afuera.
+    RobotSpeed robot_speed{.adv = linear_speed, .side = 0, .rot = angular_speed};
+    omnirobot_proxy->setSpeedBase(robot_speed.adv, robot_speed.side, robot_speed.rot);
+
     return std::make_tuple(Estado::SPIRAL, robot_speed);
 }
-*/
 std::tuple<SpecificWorker::Estado , SpecificWorker::RobotSpeed> SpecificWorker::stop() {
     omnirobot_proxy->setSpeedBase(0, 0, 0);
     RobotSpeed robot_speed;
