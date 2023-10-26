@@ -51,18 +51,21 @@ public slots:
 private:
     bool startup_check_flag;
     AbstractGraphicViewer *viewer;
-
+    float MIN_DISTANCE= 650;
+    float MIN_DISTANCE_X = 325;
     void draw_lidar(const RoboCompLidar3D::TPoints &points, AbstractGraphicViewer *viewer);
 
     enum class Estado { IDLE, FOLLOW_WALL, STRAIGHT_LINE, SPIRAL};
     //Estados
     Estado estado = Estado::SPIRAL;
     bool primeraVez= false;
+    double delta = 0;
+    double rot = 0;
     struct RobotSpeed{float adv; float side; float rot;};
-    std::tuple<Estado, RobotSpeed> chocachoca(RoboCompLidar3D::TPoints &points);
-    std::tuple<Estado, RobotSpeed> stop();
-    std::tuple<Estado, RobotSpeed> follow_wall(RoboCompLidar3D::TPoints &points);
-    std::tuple<Estado, RobotSpeed> spiral(RoboCompLidar3D::TPoints &points, RobotSpeed);
+    void chocachoca(RoboCompLidar3D::TPoints &points);
+    void stop();
+    void follow_wall(RoboCompLidar3D::TPoints &points);
+    void spiral(RoboCompLidar3D::TPoints &points);
 };
 
 #endif
