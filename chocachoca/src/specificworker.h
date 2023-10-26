@@ -51,8 +51,8 @@ public slots:
 private:
     bool startup_check_flag;
     AbstractGraphicViewer *viewer;
-    double MIN_DISTANCE= 700;
-    double MIN_DISTANCE_X = 350;
+    double MIN_DISTANCE= 650;
+    double MIN_DISTANCE_X = 400;
     void draw_lidar(const RoboCompLidar3D::TPoints &points, AbstractGraphicViewer *viewer);
 
     enum class Estado { IDLE, FOLLOW_WALL, STRAIGHT_LINE, SPIRAL};

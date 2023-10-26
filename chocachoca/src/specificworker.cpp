@@ -179,20 +179,20 @@ void SpecificWorker::follow_wall(RoboCompLidar3D::TPoints &points) {
     qInfo() <<"x: "<< abs(min_elem->x)<<"y: "<< abs(min_elem->y);
 
     if ( std::hypot(min_elem->x, min_elem->y) < MIN_DISTANCE) {
-        omnirobot_proxy->setSpeedBase(0, 0.35, 1);
+        omnirobot_proxy->setSpeedBase(0, 0.7, 1);
         if(abs(min_elem->x) > MIN_DISTANCE_X){
             omnirobot_proxy->setSpeedBase(1, 0, 0);
         }
 
     } else {
-        if(abs(min_elem->x) > MIN_DISTANCE_X+40) {
-            omnirobot_proxy->setSpeedBase(0, -M_PI/2, -1);
+        if(abs(min_elem->x) > MIN_DISTANCE_X+15) {
+            omnirobot_proxy->setSpeedBase(0, -1, -1);
         }else {
             omnirobot_proxy->setSpeedBase(1, 0, 0);
         }
     }
-    MIN_DISTANCE_X = MIN_DISTANCE_X + 0.5;
-    MIN_DISTANCE = MIN_DISTANCE + 0.5;
+    MIN_DISTANCE_X = MIN_DISTANCE_X + 0.6;
+    MIN_DISTANCE = MIN_DISTANCE + 0.6;
     estado = Estado::FOLLOW_WALL;
 }
 
@@ -211,7 +211,7 @@ void SpecificWorker::spiral(RoboCompLidar3D::TPoints &points) {
     }
     else {
         if (DENOMINADOR - delta > 0 && ROTA - rot > 0) {
-            omnirobot_proxy->setSpeedBase(M_PI / (DENOMINADOR - delta), 0, ROTA - rot);
+            omnirobot_proxy->setSpeedBase(M_PI / (DENOMINADOR - delta), 0, ROTA);
         }
         rot = rot + 0.000005;
         delta = delta + (0.0065);
