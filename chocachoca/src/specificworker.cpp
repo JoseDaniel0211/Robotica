@@ -186,7 +186,7 @@ void SpecificWorker::follow_wall(RoboCompLidar3D::TPoints &points) {
 
     } else {
         if(abs(min_elem->x) > MIN_DISTANCE_X+15) {
-            omnirobot_proxy->setSpeedBase(0, -1, -1);
+            omnirobot_proxy->setSpeedBase(0.5, -1, -1);
         }else {
             omnirobot_proxy->setSpeedBase(1, 0, 0);
         }
