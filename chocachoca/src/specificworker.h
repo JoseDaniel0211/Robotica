@@ -62,10 +62,10 @@ private:
     double delta = 0;
     double rot = 0;
     struct RobotSpeed{float adv; float side; float rot;};
-    void chocachoca(RoboCompLidar3D::TPoints &points);
-    void stop();
-    void follow_wall(RoboCompLidar3D::TPoints &points);
-    void spiral(RoboCompLidar3D::TPoints &points);
+    Estado chocachoca(RoboCompLidar3D::TPoints &points);
+    Estado stop();
+    Estado follow_wall(RoboCompLidar3D::TPoints &points);
+    Estado spiral(RoboCompLidar3D::TPoints &points);
 };
 
 #endif

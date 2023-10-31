@@ -101,15 +101,15 @@ void SpecificWorker::compute() {
             stop();
             break;
         case Estado::FOLLOW_WALL:
-            follow_wall(const_cast<RoboCompLidar3D::TPoints &>(points));
+            estado = follow_wall(const_cast<RoboCompLidar3D::TPoints &>(points));
             break;
         case Estado::STRAIGHT_LINE: {
-            chocachoca(const_cast<RoboCompLidar3D::TPoints &>(points));
+            estado = chocachoca(const_cast<RoboCompLidar3D::TPoints &>(points));
 
             break;
         }
         case Estado::SPIRAL:
-            spiral(const_cast<RoboCompLidar3D::TPoints &>(points));
+            estado = spiral(const_cast<RoboCompLidar3D::TPoints &>(points));
             break;
     }
     }
@@ -155,31 +155,41 @@ void SpecificWorker::draw_lidar(const RoboCompLidar3D::TPoints &points, Abstract
     }
 }
 
-void SpecificWorker::chocachoca(RoboCompLidar3D::TPoints &points) {
+SpecificWorker::Estado SpecificWorker::chocachoca(RoboCompLidar3D::TPoints &points) {
     int offset = points.size()/2-points.size()/3;
     auto min_elem = std::min_element(points.begin()+offset, points.end()-offset, [](auto  a, auto b)
     { return std::hypot(a.x, a.y) < std::hypot(b.x, b.y); });
 
-    const float MIN_DISTANCE = 1000;
+    const float MIN_DISTANCE_chocachoca = 700;
     qInfo() << std::hypot(min_elem->x, min_elem->y);
-    if(std::hypot(min_elem->x, min_elem->y) < MIN_DISTANCE)
+    if(std::hypot(min_elem->x, min_elem->y) < MIN_DISTANCE_chocachoca)
     {
-        omnirobot_proxy->setSpeedBase(0, 0, 3);
+        omnirobot_proxy->setSpeedBase(0, 0, 1);
     }else{
-        omnirobot_proxy->setSpeedBase(1.5, 0, 0);
+        omnirobot_proxy->setSpeedBase(1, 0, 0);
     }
-    estado = Estado::STRAIGHT_LINE;
+    return Estado::STRAIGHT_LINE;
 }
 
-void SpecificWorker::follow_wall(RoboCompLidar3D::TPoints &points) {
+SpecificWorker::Estado SpecificWorker::follow_wall(RoboCompLidar3D::TPoints &points) {
     int offset = points.size() / 2 - points.size() / 3;
     auto min_elem = std::min_element(points.begin() + offset, points.end() - offset, [](auto a, auto b)
     { return std::hypot(a.x, a.y) < std::hypot(b.x, b.y); });
+    srand(time(0));
+
+    // Genera un número entero aleatorio entre 0 y RAND_MAX
+    int random_integer = rand();
+
+    // Normaliza el número entero en un valor entre 0 y 1
+    double random_decimal = (double)random_integer / RAND_MAX;
 
     qInfo() <<"x: "<< abs(min_elem->x)<<"y: "<< abs(min_elem->y);
 
     if ( std::hypot(min_elem->x, min_elem->y) < MIN_DISTANCE) {
         omnirobot_proxy->setSpeedBase(0, 1, 1.2);
+        if ( min_elem->x < 500 && random_decimal < 0.1) {
+            return Estado::STRAIGHT_LINE;
+        }
         if(abs(min_elem->x) > MIN_DISTANCE_X){
             omnirobot_proxy->setSpeedBase(2, 0, 0);
         }
@@ -193,21 +203,21 @@ void SpecificWorker::follow_wall(RoboCompLidar3D::TPoints &points) {
     }
     MIN_DISTANCE_X = MIN_DISTANCE_X + 1;
     MIN_DISTANCE = MIN_DISTANCE + 1;
-    estado = Estado::FOLLOW_WALL;
+    return Estado::FOLLOW_WALL;
 }
 
 
-void SpecificWorker::spiral(RoboCompLidar3D::TPoints &points) {
+SpecificWorker::Estado SpecificWorker::spiral(RoboCompLidar3D::TPoints &points) {
     int offset = points.size() / 2 - points.size() / 3;
     auto min_elem = std::min_element(points.begin() + offset, points.end() - offset, [](auto a, auto b)
     { return std::hypot(a.x, a.y) < std::hypot(b.x, b.y); });
 
     const double DENOMINADOR = 6;
     const float ROTA = 0.80;
-    const float MIN_DISTANCE= 400;
+    const float MIN_DISTANCE= 700;
 
     if ( std::hypot(min_elem->x, min_elem->y) < MIN_DISTANCE) {
-        estado = Estado::FOLLOW_WALL;
+        return Estado::FOLLOW_WALL;
     }
     else {
         if (DENOMINADOR - delta > 0 && ROTA - rot > 0) {
@@ -216,12 +226,13 @@ void SpecificWorker::spiral(RoboCompLidar3D::TPoints &points) {
         rot = rot + 0.00025;
         delta = delta + (0.0065);
 
-        estado = Estado::SPIRAL;
+
     }
+    return Estado::SPIRAL;
 }
-void SpecificWorker::stop() {
+SpecificWorker::Estado SpecificWorker::stop() {
     omnirobot_proxy->setSpeedBase(0, 0, 0);
-    estado = Estado::IDLE;
+    return Estado::IDLE;
 }
 
 
