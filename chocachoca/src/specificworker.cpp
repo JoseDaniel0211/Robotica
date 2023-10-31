@@ -164,9 +164,9 @@ void SpecificWorker::chocachoca(RoboCompLidar3D::TPoints &points) {
     qInfo() << std::hypot(min_elem->x, min_elem->y);
     if(std::hypot(min_elem->x, min_elem->y) < MIN_DISTANCE)
     {
-        omnirobot_proxy->setSpeedBase(0, 0, 1);
+        omnirobot_proxy->setSpeedBase(0, 0, 3);
     }else{
-        omnirobot_proxy->setSpeedBase(1, 0, 0);
+        omnirobot_proxy->setSpeedBase(1.5, 0, 0);
     }
     estado = Estado::STRAIGHT_LINE;
 }
@@ -179,20 +179,20 @@ void SpecificWorker::follow_wall(RoboCompLidar3D::TPoints &points) {
     qInfo() <<"x: "<< abs(min_elem->x)<<"y: "<< abs(min_elem->y);
 
     if ( std::hypot(min_elem->x, min_elem->y) < MIN_DISTANCE) {
-        omnirobot_proxy->setSpeedBase(0.15, 0.8, 1);
+        omnirobot_proxy->setSpeedBase(0, 1, 1.2);
         if(abs(min_elem->x) > MIN_DISTANCE_X){
-            omnirobot_proxy->setSpeedBase(1, 0, 0);
+            omnirobot_proxy->setSpeedBase(2, 0, 0);
         }
 
     } else {
         if(abs(min_elem->x) > MIN_DISTANCE_X+15) {
-            omnirobot_proxy->setSpeedBase(0.5, -1, -1);
+            omnirobot_proxy->setSpeedBase(0, -1, -1);
         }else {
-            omnirobot_proxy->setSpeedBase(1, 0, 0);
+            omnirobot_proxy->setSpeedBase(2, 0, 0);
         }
     }
-    MIN_DISTANCE_X = MIN_DISTANCE_X + 0.6;
-    MIN_DISTANCE = MIN_DISTANCE + 0.6;
+    MIN_DISTANCE_X = MIN_DISTANCE_X + 1;
+    MIN_DISTANCE = MIN_DISTANCE + 1;
     estado = Estado::FOLLOW_WALL;
 }
 
