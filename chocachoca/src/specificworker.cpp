@@ -29,7 +29,6 @@ SpecificWorker::SpecificWorker(TuplePrx tprx, bool startup_check) : GenericWorke
     // shown in the console with qDebug()
 //	QLoggingCategory::setFilterRules("*.debug=false\n");
 }
-
 /**
 * \brief Default destructor
 */
@@ -162,11 +161,28 @@ SpecificWorker::Estado SpecificWorker::chocachoca(RoboCompLidar3D::TPoints &poin
 
     const float MIN_DISTANCE_chocachoca = 700;
     qInfo() << std::hypot(min_elem->x, min_elem->y);
+    int random_integer = rand();
+
+    // Normaliza el número entero en un valor entre 0 y 1
+    double random_decimal = (double)random_integer / RAND_MAX;
+    double random_giro = (double)random_integer / RAND_MAX;
+    double random_spiral = (double)random_integer / RAND_MAX;
+
     if(std::hypot(min_elem->x, min_elem->y) < MIN_DISTANCE_chocachoca)
     {
-        omnirobot_proxy->setSpeedBase(0, 0, 1);
+        if(random_decimal < 0.2){
+            return Estado::FOLLOW_WALL;
+        }
+        else{
+            if(random_giro <0.5){
+                omnirobot_proxy->setSpeedBase(0, 0, 3);
+            }
+
+        }
+
     }else{
-        omnirobot_proxy->setSpeedBase(1, 0, 0);
+
+        omnirobot_proxy->setSpeedBase(2, 0, 0);
     }
     return Estado::STRAIGHT_LINE;
 }
@@ -187,7 +203,7 @@ SpecificWorker::Estado SpecificWorker::follow_wall(RoboCompLidar3D::TPoints &poi
 
     if ( std::hypot(min_elem->x, min_elem->y) < MIN_DISTANCE) {
         omnirobot_proxy->setSpeedBase(0, 1, 1.2);
-        if ( min_elem->x < 500 && random_decimal < 0.1) {
+        if (random_decimal < 0.15) {
             return Estado::STRAIGHT_LINE;
         }
         if(abs(min_elem->x) > MIN_DISTANCE_X){
@@ -214,7 +230,7 @@ SpecificWorker::Estado SpecificWorker::spiral(RoboCompLidar3D::TPoints &points) 
 
     const double DENOMINADOR = 6;
     const float ROTA = 0.80;
-    const float MIN_DISTANCE= 700;
+    const float MIN_DISTANCE= 400;
 
     if ( std::hypot(min_elem->x, min_elem->y) < MIN_DISTANCE) {
         return Estado::FOLLOW_WALL;
