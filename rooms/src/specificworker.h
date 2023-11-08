@@ -47,26 +47,17 @@ public slots:
     void initialize(int period);
 
 
-
 private:
     bool startup_check_flag;
     AbstractGraphicViewer *viewer;
-    double MIN_DISTANCE= 600;
-    double MIN_DISTANCE_X = 375;
-    double MIN_SPIRAL = 900;
     void draw_lidar(const RoboCompLidar3D::TPoints &points, AbstractGraphicViewer *viewer);
-
-    enum class Estado { IDLE, FOLLOW_WALL, STRAIGHT_LINE, SPIRAL};
-    //Estados
-    Estado estado = Estado::SPIRAL;
-    bool primeraVez= false;
-    double delta = 0;
-    double rot = 0;
-    struct RobotSpeed{float adv; float side; float rot;};
-    Estado chocachoca(RoboCompLidar3D::TPoints &points);
-    Estado stop();
-    Estado follow_wall(RoboCompLidar3D::TPoints &points);
-    Estado spiral(RoboCompLidar3D::TPoints &points);
+    tuple<RoboCompLidar3D::TPoints, RoboCompLidar3D::TPoints,RoboCompLidar3D::TPoints> DetectarPuertas(const RoboCompLidar3D::TPoints &points);
+    double alturaZ1_MIN = 400;
+    double alturaZ1_MAX = 600;
+    double alturaZ2_MIN = 700;
+    double alturaZ2_MAX = 900;
+    double alturaZ3_MIN = 1100;
+    double alturaZ3_MAX = 1300;
 };
 
 #endif

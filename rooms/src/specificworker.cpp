@@ -17,7 +17,7 @@
  *    along with RoboComp.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "specificworker.h"
-
+#include <cppitertools/sliding_window.hpp>
 /**
 * \brief Default constructor
 */
@@ -81,53 +81,21 @@ void SpecificWorker::initialize(int period)
 void SpecificWorker::compute() {
 
     RoboCompLidar3D::TData ldata;
-    try
-    {
-        ldata = lidar3d_proxy->getLidarData("bpearl", 0, 360, 1);
-        qInfo() << ldata.points.size();
-        const auto &points = ldata.points;
-        if (points.empty()) return;
 
+    ldata = lidar3d_proxy->getLidarData("bpearl", 0, 360, 1);
+    qInfo() << ldata.points.size();
+    const auto &points = ldata.points;
+    if (points.empty()) return;
 
     //decltype(ldata.points) filtered_points;
     RoboCompLidar3D::TPoints filtered_points;
-    std::ranges::copy_if(ldata.points, std::back_inserter(filtered_points), [](auto &p) { return p.z < 2000;});
-    draw_lidar(filtered_points, viewer);
-    std::tuple<Estado, RobotSpeed> res;
-    switch(estado)
-    {
-        case Estado::IDLE:
-            stop();
-            break;
-        case Estado::FOLLOW_WALL:
-            estado = follow_wall(const_cast<RoboCompLidar3D::TPoints &>(points));
-            break;
-        case Estado::STRAIGHT_LINE: {
-            estado = chocachoca(const_cast<RoboCompLidar3D::TPoints &>(points));
-
-            break;
-        }
-        case Estado::SPIRAL:
-            estado = spiral(const_cast<RoboCompLidar3D::TPoints &>(points));
-            break;
-    }
-    }
-    catch (const Ice::Exception &e)
-    {
-        std::cout << "Error reading from Camera" << e << std::endl;
-    }
-    /*
-    estado = std::get<0>(res);
-    auto &[estado_, robotspeed_] = res;
-    estado = estado_;
-    */
-    try
-    {
-        //omnirobot_proxy->setSpeedBase(0,0,0.5);
-    }
-    catch(const Ice::Exception &e) {
-        std::cout << "Error reading from Camera" << e << std::endl;
-    }
+    std::ranges::copy_if(ldata.points, std::back_inserter(filtered_points), [](auto &p) { return p.z < 2000; });
+    //draw_lidar(filtered_points, viewer);
+    tuple<RoboCompLidar3D::TPoints, RoboCompLidar3D::TPoints,RoboCompLidar3D::TPoints> tupla;
+    tupla = DetectarPuertas(const_cast<RoboCompLidar3D::TPoints &>(points));
+    RoboCompLidar3D::TPoints a = std::get<2>(tupla);
+    draw_lidar(a, viewer);
+    auto peaks = extract_peaks(tuple<RoboCompLidar3D::TPoints, RoboCompLidar3D::TPoints,RoboCompLidar3D::TPoints>);
 }
 
 
@@ -154,105 +122,26 @@ void SpecificWorker::draw_lidar(const RoboCompLidar3D::TPoints &points, Abstract
     }
 }
 
-SpecificWorker::Estado SpecificWorker::chocachoca(RoboCompLidar3D::TPoints &points) {
-    int offset = points.size()/2-points.size()/3;
-    auto min_elem = std::min_element(points.begin()+offset, points.end()-offset, [](auto  a, auto b)
-    { return std::hypot(a.x, a.y) < std::hypot(b.x, b.y); });
-
-    const float MIN_DISTANCE_chocachoca = 700;
-    qInfo() << std::hypot(min_elem->x, min_elem->y);
-    int random_integer = rand();
-
-    // Normaliza el número entero en un valor entre 0 y 1
-    double random_decimal = (double)random_integer / RAND_MAX;
-    double random_giro = (double)random_integer / RAND_MAX;
-    double random_spiral = (double)random_integer / RAND_MAX;
-
-    if(std::hypot(min_elem->x, min_elem->y) < MIN_DISTANCE_chocachoca)
-    {
-        if(random_decimal < 0.2){
-            return Estado::FOLLOW_WALL;
+tuple<RoboCompLidar3D::TPoints, RoboCompLidar3D::TPoints,RoboCompLidar3D::TPoints> SpecificWorker::DetectarPuertas(const RoboCompLidar3D::TPoints &points){
+    RoboCompLidar3D::TPoints array1, array2, array3;
+    for(const auto &p : points){
+        if(p.z > alturaZ1_MIN && p.z < alturaZ1_MAX){
+            array1.push_back(p);
         }
-        else{
-            if(random_giro <0.5){
-                omnirobot_proxy->setSpeedBase(0, 0, 3);
-            }
-
+        if(p.z > alturaZ2_MIN && p.z < alturaZ2_MAX){
+            array2.push_back(p);
         }
-
-    }else{
-
-        omnirobot_proxy->setSpeedBase(2, 0, 0);
-    }
-    return Estado::STRAIGHT_LINE;
-}
-
-SpecificWorker::Estado SpecificWorker::follow_wall(RoboCompLidar3D::TPoints &points) {
-    int offset = points.size() / 2 - points.size() / 3;
-    auto min_elem = std::min_element(points.begin() + offset, points.end() - offset, [](auto a, auto b)
-    { return std::hypot(a.x, a.y) < std::hypot(b.x, b.y); });
-    srand(time(0));
-
-    // Genera un número entero aleatorio entre 0 y RAND_MAX
-    int random_integer = rand();
-
-    // Normaliza el número entero en un valor entre 0 y 1
-    double random_decimal = (double)random_integer / RAND_MAX;
-
-    qInfo() <<"x: "<< abs(min_elem->x)<<"y: "<< abs(min_elem->y);
-
-    if ( std::hypot(min_elem->x, min_elem->y) < MIN_DISTANCE) {
-        omnirobot_proxy->setSpeedBase(0, 1, 1.2);
-        if (random_decimal < 0.15) {
-            return Estado::STRAIGHT_LINE;
-        }
-        if(abs(min_elem->x) > MIN_DISTANCE_X){
-            omnirobot_proxy->setSpeedBase(2, 0, 0);
-        }
-
-    } else {
-        if(abs(min_elem->x) > MIN_DISTANCE_X+15) {
-            omnirobot_proxy->setSpeedBase(0, -1, -1);
-        }else {
-            omnirobot_proxy->setSpeedBase(2, 0, 0);
+        if(p.z > alturaZ3_MIN && p.z < alturaZ3_MAX){
+            array3.push_back(p);
         }
     }
-    MIN_DISTANCE_X = MIN_DISTANCE_X + 1;
-    MIN_DISTANCE = MIN_DISTANCE + 1;
-    return Estado::FOLLOW_WALL;
+    return std::make_tuple(array1, array2, array3);
 }
-
-
-SpecificWorker::Estado SpecificWorker::spiral(RoboCompLidar3D::TPoints &points) {
-    int offset = points.size() / 2 - points.size() / 3;
-    auto min_elem = std::min_element(points.begin() + offset, points.end() - offset, [](auto a, auto b)
-    { return std::hypot(a.x, a.y) < std::hypot(b.x, b.y); });
-
-    const double DENOMINADOR = 6;
-    const float ROTA = 0.80;
-    const float MIN_DISTANCE= 400;
-
-    if ( std::hypot(min_elem->x, min_elem->y) < MIN_DISTANCE) {
-        return Estado::FOLLOW_WALL;
-    }
-    else {
-        if (DENOMINADOR - delta > 0 && ROTA - rot > 0) {
-            omnirobot_proxy->setSpeedBase(M_PI / (DENOMINADOR - delta), 0, ROTA);
-        }
-        rot = rot + 0.00025;
-        delta = delta + (0.0065);
-
-
-    }
-    return Estado::SPIRAL;
+viod SpecificWorker::extract_peaks(const ){
+    RoboCompLidar3D::TPoints peaks;
+    for(const auto &both: iter::sliding_window(lines.low), 2)
+        peaks.low[both[1].r - both[0].r]
 }
-SpecificWorker::Estado SpecificWorker::stop() {
-    omnirobot_proxy->setSpeedBase(0, 0, 0);
-    return Estado::IDLE;
-}
-
-
-
 
 /**************************************/
 // From the RoboCompLidar3D you can call this methods:
