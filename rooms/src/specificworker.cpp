@@ -18,6 +18,7 @@
  */
 #include "specificworker.h"
 #include <cppitertools/sliding_window.hpp>
+
 /**
 * \brief Default constructor
 */
@@ -82,24 +83,60 @@ void SpecificWorker::compute() {
 
     RoboCompLidar3D::TData ldata;
 
-    ldata = lidar3d_proxy->getLidarData("bpearl", 0, 360, 1);
+    ldata = lidar3d_proxy->getLidarData("helios", 0, 360, 1);
     qInfo() << ldata.points.size();
     const auto &points = ldata.points;
     if (points.empty()) return;
 
     //decltype(ldata.points) filtered_points;
     RoboCompLidar3D::TPoints filtered_points;
-    std::ranges::copy_if(ldata.points, std::back_inserter(filtered_points), [](auto &p) { return p.z < 2000; });
-    //draw_lidar(filtered_points, viewer);
-    tuple<RoboCompLidar3D::TPoints, RoboCompLidar3D::TPoints,RoboCompLidar3D::TPoints> tupla;
-    tupla = DetectarPuertas(const_cast<RoboCompLidar3D::TPoints &>(points));
-    RoboCompLidar3D::TPoints a = std::get<2>(tupla);
-    draw_lidar(a, viewer);
-    auto peaks = extract_peaks(tuple<RoboCompLidar3D::TPoints, RoboCompLidar3D::TPoints,RoboCompLidar3D::TPoints>);
+    std::ranges::copy_if(ldata.points, std::back_inserter(filtered_points), [](auto &p) { return p.z < 2000;});
+
+    auto lines = extract_lines(filtered_points);
+    auto peaks = extract_peaks(lines);
+    auto doors = get_doors(peaks);
+
+    draw_lidar(lines.middle, viewer);
+    draw_doors(peaks.high, viewer);
+}
+///////////////////////////////////////////////////////////////////////////////
+
+SpecificWorker::Lines SpecificWorker::extract_lines(const RoboCompLidar3D::TPoints &points)
+{
+    Lines lines;
+    for(const auto &p: points)
+    {
+        qInfo() << p.x << p.y << p.z;
+        if(p.z > LOW_LOW and p.z < LOW_HIGH)
+            lines.low.push_back(p);
+        if(p.z > MIDDLE_LOW and p.z < MIDDLE_HIGH)
+            lines.middle.push_back(p);
+        if(p.z > HIGH_LOW and p.z < HIGH_HIGH)
+            lines.high.push_back(p);
+    }
+    return lines;
+}
+
+SpecificWorker::Lines SpecificWorker::extract_peaks(const SpecificWorker::Lines &lines)
+{
+    Lines peaks;
+    const float THRES_PEAK = 1000;
+    for(const auto &both: iter::sliding_window(lines.low, 2))
+        if(fabs(both[1].r - both[0].r) > THRES_PEAK)
+            peaks.low.push_back(both[0]);
+    for(const auto &both: iter::sliding_window(lines.middle, 2))
+        if(fabs(both[1].r - both[0].r) > THRES_PEAK)
+            peaks.middle.push_back(both[0]);
+    for(const auto &both: iter::sliding_window(lines.high, 2))
+        if(fabs(both[1].r - both[0].r) > THRES_PEAK)
+            peaks.high.push_back(both[0]);
+
+    return peaks;
 }
 
 
-int SpecificWorker::startup_check() {
+int SpecificWorker::startup_check()
+{
     std::cout << "Startup check" << std::endl;
     QTimer::singleShot(200, qApp, SLOT(quit()));
     return 0;
@@ -122,26 +159,61 @@ void SpecificWorker::draw_lidar(const RoboCompLidar3D::TPoints &points, Abstract
     }
 }
 
-tuple<RoboCompLidar3D::TPoints, RoboCompLidar3D::TPoints,RoboCompLidar3D::TPoints> SpecificWorker::DetectarPuertas(const RoboCompLidar3D::TPoints &points){
-    RoboCompLidar3D::TPoints array1, array2, array3;
-    for(const auto &p : points){
-        if(p.z > alturaZ1_MIN && p.z < alturaZ1_MAX){
-            array1.push_back(p);
+void SpecificWorker::draw_doors(const Door &doors, AbstractGraphicViewer *pViewer) {
+    static std::vector<QGraphicsItem*> borrar;
+    for(auto &b : borrar) {
+        viewer->scene.removeItem(b);
+        delete b;
+    }
+    borrar.clear();
+
+    for(const auto &d : doors)
+    {
+        auto point = viewer->scene.addRect(-50,-50,100, 100, QPen(QColor("green")), QBrush(QColor("green")));
+        point->setPos(d.left.x, d.left.x);
+        borrar.push_back(point);
+        point = viewer->scene.addRect(-50,-50,100, 100, QPen(QColor("green")), QBrush(QColor("green")));
+        point->setPos(d.right.x, d.right.y);
+        borrar.push_back(point);
+        auto line = viewer->scene.addLine(d.left.x, d.letft.y, d.right.x, d.right.y, QPen(QColor("green")), QBrush(QColor("green")));
+        borrar.push_back(line);
+    }
+}
+
+ SpecificWorker::Door SpecificWorker::get_doors(const SpecificWorker::Lines &peaks) {
+    Door doors;
+    auto dist = [](auto a, auto b){
+        return std::hypot(a.x-b.x, a.y-b.y);};
+    const float THRES_DOOR = 200;
+    auto near_door = [doors, dist, THRES_DOOR](auto d){
+        for(auto &&old : doors)
+        {
+            if(dist(old.left, d.left) < THRES_DOOR or
+            dist(old.right, d.right) < THRES_DOOR or
+            dist(old.left, d.right) < THRES_DOOR or
+            dist(old.right, d.left) < THRES_DOOR)
+                return true;
+            else
+                return false;
         }
-        if(p.z > alturaZ2_MIN && p.z < alturaZ2_MAX){
-            array2.push_back(p);
-        }
-        if(p.z > alturaZ3_MIN && p.z < alturaZ3_MAX){
-            array3.push_back(p);
+    };
+    for(const auto &par: peaks.middle | iter::combinations(2)){
+        if(dist(par[0].x, par[1]) < 1300 and dist(par[0], par[1]) >500){
+            auto door = Door{par[0], par[1]};
+            if( not near_door())
+            doors.emplace_back(Door{par[0], par[1]});
         }
     }
-    return std::make_tuple(array1, array2, array3);
+    return doors;
 }
-viod SpecificWorker::extract_peaks(const ){
-    RoboCompLidar3D::TPoints peaks;
-    for(const auto &both: iter::sliding_window(lines.low), 2)
-        peaks.low[both[1].r - both[0].r]
-}
+
+
+
+
+
+
+
+
 
 /**************************************/
 // From the RoboCompLidar3D you can call this methods:

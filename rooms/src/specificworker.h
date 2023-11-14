@@ -30,6 +30,7 @@
 #include <genericworker.h>
 #include <abstract_graphic_viewer/abstract_graphic_viewer.h>
 #include <ranges>
+#include <combinations/combinations.h>
 
 class SpecificWorker : public GenericWorker
 {
@@ -39,25 +40,39 @@ public:
     ~SpecificWorker();
     bool setParams(RoboCompCommonBehavior::ParameterList params);
 
-
-
 public slots:
     void compute();
     int startup_check();
     void initialize(int period);
 
-
 private:
+
+    const float LOW_LOW = 300;
+    const float LOW_HIGH = 500;
+    const float MIDDLE_LOW = 600;
+    const float MIDDLE_HIGH = 800;
+    const float HIGH_LOW = 1000;
+    const float HIGH_HIGH = 1200;
+
     bool startup_check_flag;
     AbstractGraphicViewer *viewer;
+    struct Lines
+    {
+        RoboCompLidar3D::TPoints low, middle, high;
+    };
+
+    struct Door{
+        RoboCompLidar3D::TPoints left, right;
+    };
+    using Door = std::vector<Door>;
     void draw_lidar(const RoboCompLidar3D::TPoints &points, AbstractGraphicViewer *viewer);
-    tuple<RoboCompLidar3D::TPoints, RoboCompLidar3D::TPoints,RoboCompLidar3D::TPoints> DetectarPuertas(const RoboCompLidar3D::TPoints &points);
-    double alturaZ1_MIN = 400;
-    double alturaZ1_MAX = 600;
-    double alturaZ2_MIN = 700;
-    double alturaZ2_MAX = 900;
-    double alturaZ3_MIN = 1100;
-    double alturaZ3_MAX = 1300;
+    Lines extract_lines(const RoboCompLidar3D::TPoints &points);
+
+    SpecificWorker::Lines extract_peaks(const Lines &lines);
+
+    void draw_doors(const Door &doors, AbstractGraphicViewer *pViewer);
+
+    Door get_doors(const Lines &lines);
 };
 
 #endif
