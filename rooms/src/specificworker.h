@@ -30,7 +30,6 @@
 #include <genericworker.h>
 #include <abstract_graphic_viewer/abstract_graphic_viewer.h>
 #include <ranges>
-#include <combinations/combinations.h>
 
 class SpecificWorker : public GenericWorker
 {
@@ -62,13 +61,13 @@ private:
     };
 
     struct Door{
-        RoboCompLidar3D::TPoints left, right;
+        RoboCompLidar3D::TPoints left, right, middle;
     };
-    using Door = std::vector<Door>;
+    using Doors = std::vector<Door>;
     void draw_lidar(const RoboCompLidar3D::TPoints &points, AbstractGraphicViewer *viewer);
     Lines extract_lines(const RoboCompLidar3D::TPoints &points);
 
-    SpecificWorker::Lines extract_peaks(const Lines &lines);
+    SpecificWorker::Lines extract_peaks(const Lines &peaks);
 
     void draw_doors(const Door &doors, AbstractGraphicViewer *pViewer);
 
