@@ -33,25 +33,25 @@
 
 class SpecificWorker : public GenericWorker
 {
-Q_OBJECT
-public:
-    SpecificWorker(TuplePrx tprx, bool startup_check);
-    ~SpecificWorker();
-    bool setParams(RoboCompCommonBehavior::ParameterList params);
+    Q_OBJECT
+    public:
+        SpecificWorker(TuplePrx tprx, bool startup_check);
+        ~SpecificWorker();
+        bool setParams(RoboCompCommonBehavior::ParameterList params);
 
-public slots:
-    void compute();
-    int startup_check();
-    void initialize(int period);
+    public slots:
+        void compute();
+        int startup_check();
+        void initialize(int period);
 
-private:
+    private:
 
-    const float LOW_LOW = 300;
-    const float LOW_HIGH = 500;
-    const float MIDDLE_LOW = 600;
-    const float MIDDLE_HIGH = 800;
-    const float HIGH_LOW = 1000;
-    const float HIGH_HIGH = 1200;
+        const float LOW_LOW = 300;
+        const float LOW_HIGH = 500;
+        const float MIDDLE_LOW = 600;
+        const float MIDDLE_HIGH = 800;
+        const float HIGH_LOW = 1000;
+        const float HIGH_HIGH = 1200;
 
     bool startup_check_flag;
     AbstractGraphicViewer *viewer;
@@ -60,18 +60,25 @@ private:
         RoboCompLidar3D::TPoints low, middle, high;
     };
 
-    struct Door{
-        RoboCompLidar3D::TPoints left, right, middle;
+    struct Door
+    {
+        RoboCompLidar3D::TPoint left, right, middle;
+        bool operator==(Door d){};
+
     };
     using Doors = std::vector<Door>;
+
     void draw_lidar(const RoboCompLidar3D::TPoints &points, AbstractGraphicViewer *viewer);
     Lines extract_lines(const RoboCompLidar3D::TPoints &points);
 
     SpecificWorker::Lines extract_peaks(const Lines &peaks);
+    void draw_doors(const Doors &doors, AbstractGraphicViewer *viewer);
 
-    void draw_doors(const Door &doors, AbstractGraphicViewer *pViewer);
+    std::tuple<SpecificWorker::Doors, SpecificWorker::Doors, SpecificWorker::Doors>
+    get_doors(const Lines &lines);
 
-    Door get_doors(const Lines &lines);
+    Doors filter_doors(const std::tuple<SpecificWorker::Doors, SpecificWorker::Doors, SpecificWorker::Doors> &doors);
 };
+
 
 #endif
