@@ -20,7 +20,7 @@
 #include <cppitertools/sliding_window.hpp>
 #include <cppitertools/combinations.hpp>
 #include <cppitertools/enumerate.hpp>
-
+QElapsedTimer cross_door_timer;
 /**
 * \brief Default constructor
 */
@@ -84,6 +84,7 @@ void SpecificWorker::compute()
     draw_target_door(door_target, viewer);
 
 }
+
 ///////////////////////////////////////////////////////////////////////////////
 void SpecificWorker::state_machine(const Doors &doors)
 {
@@ -143,7 +144,22 @@ void SpecificWorker::state_machine(const Doors &doors)
         }
         case States::GO_THROUGH:
         {
-            move_robot(0,0,0);
+            // Cambia al estado CROSS_DOOR
+            state = States::CROSS_DOOR;
+            cross_door_timer.start(); // Inicia el temporizador para 6 segundos
+            break;
+        }
+        case States::CROSS_DOOR:
+        {
+            if (cross_door_timer.elapsed() < 6000)
+            {
+                move_robot(0, 2, 0);
+            }
+            else
+            {
+                move_robot(0, 0, 0);
+                state = States::IDLE;
+            }
             break;
         }
     }
@@ -251,45 +267,3 @@ void SpecificWorker::draw_lines(const Lines &lines, AbstractGraphicViewer *pView
             borrar.push_back(point);
         }
 }
-
-//void SpecificWorker::draw_doors(const Doors &doors, AbstractGraphicViewer *viewer, QColor color)
-//{
-//    static std::vector<QGraphicsItem *> borrar;
-//    for (auto &b: borrar) {
-//        viewer->scene.removeItem(b);
-//        delete b;
-//    }
-//    borrar.clear();
-//
-//    QColor target_color;
-//    for (const auto &d: doors)
-//    {
-//        if(d == door_target)
-//        {
-//            target_color = QColor("magenta");
-//            auto middle = viewer->scene.addRect(-100, -100, 200, 200, QColor("orange"), QBrush(QColor("orange")));
-//            auto perp = door_target.perpendicular_point();
-//            middle->setPos(perp.x, perp.y);
-//            borrar.push_back(middle);
-//        }
-//        else
-//            target_color = color;
-//        auto point = viewer->scene.addRect(-50, -50, 100, 100, QPen(target_color), QBrush(target_color));
-//        point->setPos(d.left.x, d.left.y);
-//        borrar.push_back(point);
-//        point = viewer->scene.addRect(-50, -50, 100, 100, QPen(target_color), QBrush(target_color));
-//        point->setPos(d.right.x, d.right.y);
-//        borrar.push_back(point);
-//        auto line = viewer->scene.addLine(d.left.x, d.left.y, d.right.x, d.right.y, QPen(target_color, 50));
-//        borrar.push_back(line);
-//    }
-//}
-
-/**************************************/
-// From the RoboCompLidar3D you can call this methods:
-// this->lidar3d_proxy->getLidarData(...)
-
-/**************************************/
-// From the RoboCompLidar3D you can use this types:
-// RoboCompLidar3D::TPoint
-// RoboCompLidar3D::TData
