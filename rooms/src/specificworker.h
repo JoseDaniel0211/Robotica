@@ -51,7 +51,7 @@ class SpecificWorker : public GenericWorker
 
         // states
         Door door_target;
-        enum class States{ IDLE, SEARCH_DOOR, GOTO_DOOR, GO_THROUGH, ALIGN};
+        enum class States{ IDLE, SEARCH_DOOR, GOTO_DOOR, GO_THROUGH, ALIGN, CROSS_DOOR};
         States state = States::SEARCH_DOOR;
         void state_machine(const Doors &doors);
 
