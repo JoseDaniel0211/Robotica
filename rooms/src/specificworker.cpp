@@ -98,12 +98,20 @@ void SpecificWorker::state_machine(const Doors &doors)
         case States::SEARCH_DOOR:
         {
             //qInfo() << "SEARCH_DOOR";
-            if(not doors.empty())
+            if(!doors.empty())
             {
-                door_target = doors[0];
+                Door closest_door = doors[0];
+                for (const auto& door : doors)
+                {
+                    if (fabs(door.angle_to_robot()) < fabs(closest_door.angle_to_robot()))
+                    {
+                        closest_door = door;
+                    }
+                }
+                door_target = closest_door;
                 move_robot(0,0,0);
                 state = States::GOTO_DOOR;
-                qInfo() << "First found";
+                qInfo() << "Door with smallest angle found";
                 door_target.print();
             }
             else
