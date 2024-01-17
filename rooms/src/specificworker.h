@@ -6,7 +6,9 @@
 #include <ranges>
 #include <tuple>
 #include "door_detector.h"
+#include "graph.h"
 #include <Eigen/Dense>
+
 
 class SpecificWorker : public GenericWorker
 {
@@ -60,6 +62,8 @@ class SpecificWorker : public GenericWorker
         float break_adv(float dist_to_target);
         float break_rot(float rot);
 
-
+        //Graph
+        Graph room_graph;
+        int currentRoom = 0;
 };
 #endif

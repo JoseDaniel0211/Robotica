@@ -128,7 +128,7 @@ DoorDetector::Line DoorDetector::filter_out_points_beyond_doors(const Line &floo
                 remove_points.emplace_back(point.x(), point.y());
         }
     }
-    qInfo() << __FUNCTION__ << "Before" << floor_line_cart.size() << "After" << inside_points.size() << "Removed" << remove_points.size();
+    //qInfo() << __FUNCTION__ << "Before" << floor_line_cart.size() << "After" << inside_points.size() << "Removed" << remove_points.size();
     // remove from inside_points all points in remove_points
     for (const auto &p: remove_points)
         inside_points.erase(std::remove_if(inside_points.begin(), inside_points.end(), [&p](auto &i){return (i-p).norm() < 100;}), inside_points.end());

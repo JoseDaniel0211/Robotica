@@ -45,9 +45,9 @@ class DoorDetector
             };
             void print()
             {
-                qInfo() << "Door:";
-                qInfo() << "    left:" << p0.x() << p0.y();
-                qInfo() << "    right:" << p1.x() << p1.y();
+                //qInfo() << "Door:";
+                //qInfo() << "    left:" << p0.x() << p0.y();
+                //qInfo() << "    right:" << p1.x() << p1.y();
             };
             float dist_to_robot() const
             { return middle.norm();}

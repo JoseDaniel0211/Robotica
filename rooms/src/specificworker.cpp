@@ -88,6 +88,17 @@ void SpecificWorker::compute()
 ///////////////////////////////////////////////////////////////////////////////
 void SpecificWorker::state_machine(const Doors &doors)
 {
+    qInfo() << "Nodo Actual: ";
+    if(currentRoom<4) {
+        // Cambia al estado CROSS_DOOR
+        qInfo() << currentRoom;
+    }
+    else{
+        qInfo() << currentRoom%4;
+    }
+    std::cout<<std::endl;
+
+    room_graph.print();
     switch (state)
     {
         case States::IDLE:
@@ -111,9 +122,10 @@ void SpecificWorker::state_machine(const Doors &doors)
                 door_target = closest_door;
                 move_robot(0,0,0);
                 state = States::GOTO_DOOR;
-                qInfo() << "Door with smallest angle found";
+                //qInfo() << "Door with smallest angle found";
                 door_target.print();
             }
+
             else
                 move_robot(0,0,0.3);
             break;
@@ -125,7 +137,7 @@ void SpecificWorker::state_machine(const Doors &doors)
             if(door_target.perp_dist_to_robot() < consts.DOOR_PROXIMITY_THRESHOLD)
             {
                 move_robot(0,0,0);
-                qInfo() << "GOTO_DOOR Target achieved";
+                //qInfo() << "GOTO_DOOR Target achieved";
                 state = States::ALIGN;
             }
             else    // do what you have to do and stay in this state
@@ -135,6 +147,7 @@ void SpecificWorker::state_machine(const Doors &doors)
                             break_rot(door_target.perp_angle_to_robot()) / 1000.f;
                 move_robot(0, adv, rot);
             }
+
             break;
         }
         case States::ALIGN:
@@ -152,7 +165,11 @@ void SpecificWorker::state_machine(const Doors &doors)
         }
         case States::GO_THROUGH:
         {
-            // Cambia al estado CROSS_DOOR
+            currentRoom++;
+            if (room_graph.node_count() <= 3) {
+                int newNode = room_graph.add_node();
+                room_graph.add_edge(newNode - 1, newNode);
+            }
             state = States::CROSS_DOOR;
             cross_door_timer.start(); // Inicia el temporizador para 6 segundos
             break;
@@ -163,11 +180,7 @@ void SpecificWorker::state_machine(const Doors &doors)
             {
                 move_robot(0, 2, 0);
             }
-            else
-            {
-                move_robot(0, 0, 0);
-                state = States::IDLE;
-            }
+
             break;
         }
     }
@@ -184,7 +197,7 @@ void SpecificWorker::match_door_target(const Doors &doors, const Door &target)
     {
         move_robot(0,0,0);
         state = States::SEARCH_DOOR;
-        qInfo() << "GOTO_DOOR Door lost, searching";
+        //qInfo() << "GOTO_DOOR Door lost, searching";
     }
 }
 SpecificWorker::Lines SpecificWorker::extract_lines(const RoboCompLidar3D::TPoints &points, const std::vector<std::pair<float, float>> &ranges)
@@ -217,7 +230,7 @@ void SpecificWorker::move_robot(float side, float adv, float rot)
 ////////////////////////////////////////////////////////////////////////////
 int SpecificWorker::startup_check()
 {
-    std::cout << "Startup check" << std::endl;
+    //std::cout << "Startup check" << std::endl;
     QTimer::singleShot(200, qApp, SLOT(quit()));
     return 0;
 }

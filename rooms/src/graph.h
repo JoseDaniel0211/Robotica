@@ -13,13 +13,22 @@ class Graph
     using Edges = std::vector<std::pair<int,int>>;
     Nodes nodes;
     Edges edges;
-    int current_node = 0;
 
 public:
     Graph();
     int add_node();
     int add_edge (int n1, int n2);
     void print();
+    bool add_node_and_edge(int currentRoom, int nextRoom);
+
+    size_t get_node_count() const {
+        return nodes.size();
+    }
+
+    std::vector<int> getNodes() const {
+        return nodes;
+    }
+    int node_count() const;
 };
 
 

@@ -5,15 +5,14 @@
 #include "graph.h"
 #include <ranges>
 
-Graph::Graph()
-{
+Graph::Graph() {
     nodes.push_back(0);
 }
 
 int Graph::add_node()
 {
     nodes.push_back(nodes.size());
-    return nodes.size();
+    return nodes.size()-1;
 }
 
 int Graph::add_edge(int n1, int n2) {
@@ -30,6 +29,7 @@ int Graph::add_edge(int n1, int n2) {
 
 void Graph::print()
 {
+    std::cout << "Nodos del grafo: ";
     for (const auto &n : nodes)
     {
         std::cout<< n << " " ;
@@ -37,12 +37,16 @@ void Graph::print()
 
     std::cout<<std::endl;
 
-
+    std::cout << "Arcos del grafo: ";
     for (const auto &e : edges)
     {
-        std::cout<< e.first << " "  << e.second;
+        std::cout<< e.first << " "  << e.second << "  ";
     }
 
     std::cout<<std::endl;
 
+}
+
+int Graph::node_count() const {
+    return nodes.size();
 }
